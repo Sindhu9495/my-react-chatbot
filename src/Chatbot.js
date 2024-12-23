@@ -24,12 +24,12 @@ const Chatbot = () => {
       setUserInput("");
       setIsLoading(true);
 
-      const apiUrl = 'https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+      const apiUrl = '/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
-        /*'Accept': '*/*',
-        'Access-Control-Allow-Origin': 'Content-Type, Authorization https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'api_token': '552a73ba-62dd-4472-b3c6-240711042720269', // Your API token*/
+       // 'Accept': '*/*',
+        //'Access-Control-Allow-Origin': 'Content-Type, Authorization https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com',
+        //'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'api_token': '552a73ba-62dd-4472-b3c6-240711042720269', // Your API token
         'Content-Type': 'application/json'
       };
       console.log(userMessage);
