@@ -24,7 +24,7 @@ const Chatbot = () => {
       setUserInput("");
       setIsLoading(true);
 
-      const apiUrl = '/services/apexrest/AI_Copilot/api/v1.0/';
+      const apiUrl = 'https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
        // 'Accept': '*/*',
         //'Access-Control-Allow-Origin': 'Content-Type, Authorization https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com',
