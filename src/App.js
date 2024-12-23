@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from "axios";
 import Chatbot from './Chatbot.js';
 function App() {
   console.log("App loaded")
