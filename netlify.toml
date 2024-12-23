@@ -8,5 +8,7 @@
      #  {"Access-Control-Allow-Methods" = "POST, OPTIONS"},
      #  {"Access-Control-Allow-Headers" = "Content-Type, Authorization"}
     { "Access-Control-Request-Headers"= "api_token"} 
+           {"Access-Control-Allow-Headers" = "api_token"}
+
 
   ]
