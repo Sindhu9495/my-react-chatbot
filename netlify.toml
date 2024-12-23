@@ -1,5 +1,5 @@
 [[redirects]]
-  from = "/services/*"
+  from = "abcd/services/*"
   to = "https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com/services/:splat"
   status = 200
   force = true
