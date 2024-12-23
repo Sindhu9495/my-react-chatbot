@@ -52,7 +52,18 @@ const Chatbot = () => {
           { sender: "bot", text: botMessage }
         ]);
       } catch (error) {
-        console.error("Error communicating with the API:", error);
+
+        if (error.response) {
+          // The server responded with a status code outside the 2xx range
+          console.log('Error response:', error.response);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log('Error request:', error.request);
+        } else {
+          // Something happened in setting up the request that triggered an error
+          console.log('Error message:', error.message);
+        }
+       // console.error("Error communicating with the API:", error);
         setMessages((prevMessages) => [
           ...prevMessages,
           { sender: "bot", text: "Sorry, I couldn't process that. Please try again." }
