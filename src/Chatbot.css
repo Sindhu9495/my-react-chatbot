@@ -384,7 +384,7 @@ margin-top:40px;
 
 /* End Chat Button */
 .end-chat-button {
-  background-color: #ff4d4d;
+  background-color: #ff1a1a;
   color: white;
   border: none;
   padding: 10px;
@@ -396,8 +396,15 @@ margin-top:40px;
 
 .end-chat-button:hover {
   background-color: #ff1a1a;
+    color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
   transform: scale(1.1);
 }
+
 
 /* Chat Messages */
 .chat-messages {
