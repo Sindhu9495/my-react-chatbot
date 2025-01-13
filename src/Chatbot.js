@@ -43,7 +43,7 @@ const Chatbot = () => {
       const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
         'Content-Type': 'application/json',
-        conversationId: conversationId || null, // Include conversationId in the header
+        conversationId: conversationId || undefined, // Include conversationId if it exists
       };
 
       const data = JSON.stringify({
@@ -58,8 +58,8 @@ const Chatbot = () => {
         console.log('Response from API:', result);
 
         // If conversationId is not set (first message), retrieve and save it
-        if (!conversationId && result.data?.conversationId) {
-          const newConversationId = result.data.conversationId;
+        const newConversationId = result.data?.conversationId;
+        if (newConversationId && !conversationId) {
           setConversationId(newConversationId);
           localStorage.setItem('conversationId', newConversationId);
         }
