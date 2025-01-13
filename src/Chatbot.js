@@ -10,18 +10,19 @@ const Chatbot = () => {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Retrieve or generate a unique conversation ID
-  const getConversationId = () => {
+  // Retrieve the conversation ID from localStorage or initialize it
+  const getOrCreateConversationId = () => {
     let storedId = localStorage.getItem('conversationId');
     if (!storedId) {
-      // Generate a unique ID if not present
       storedId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       localStorage.setItem('conversationId', storedId);
     }
     return storedId;
   };
 
-  const [conversationId] = useState(getConversationId());
+  const [conversationId, setConversationId] = useState(() =>
+    getOrCreateConversationId()
+  );
 
   // On component mount, load chat history
   useEffect(() => {
@@ -55,7 +56,7 @@ const Chatbot = () => {
         'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
         'Content-Type': 'application/json',
-        conversationId, // Always use the same ID from localStorage
+        conversationId, // Use consistent conversationId from localStorage
       };
 
       const data = JSON.stringify({
