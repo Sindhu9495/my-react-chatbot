@@ -1,26 +1,32 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "./Chatbot.css";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import './Chatbot.css';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "Hello! Ask me anything." },
+    { sender: 'bot', text: 'Hello! Ask me anything.' },
   ]);
-  const [userInput, setUserInput] = useState("");
+  const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
 
-  const apiUrl =
-    "https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/";
-
-  // Load conversationId from localStorage when the component mounts
+  // On component mount, check for a saved conversation ID and chat history
   useEffect(() => {
-    const savedConversationId = localStorage.getItem("conversationId");
+    const savedConversationId = localStorage.getItem('conversationId');
+    const savedMessages = localStorage.getItem('chatHistory');
     if (savedConversationId) {
       setConversationId(savedConversationId);
     }
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
   }, []);
+
+  // Save messages to localStorage whenever they update
+  useEffect(() => {
+    localStorage.setItem('chatHistory', JSON.stringify(messages));
+  }, [messages]);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -29,61 +35,53 @@ const Chatbot = () => {
   const sendMessage = async () => {
     if (userInput.trim()) {
       // Add the user's message to the chat
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: "user", text: userInput },
-      ]);
+      setMessages([...messages, { sender: 'user', text: userInput }]);
       const userMessage = userInput;
-      setUserInput("");
+      setUserInput('');
       setIsLoading(true);
 
+      const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
+        conversationId: conversationId || null, // Include conversationId in the header
       };
 
       const data = JSON.stringify({
-        configAiName: "OpenAI",
+        configAiName: 'OpenAI',
         promptQuery: userMessage,
-        conversationId, // Send null for the first message
       });
 
       try {
-        // API call to backend
+        // Make the API call
         const result = await axios.post(apiUrl, data, { headers });
 
-        console.log("Response from API:", result.data);
+        console.log('Response from API:', result);
 
-        // Extract and save the conversationId if it is not already set
+        // If conversationId is not set (first message), retrieve and save it
         if (!conversationId && result.data?.conversationId) {
           const newConversationId = result.data.conversationId;
           setConversationId(newConversationId);
-          localStorage.setItem("conversationId", newConversationId);
+          localStorage.setItem('conversationId', newConversationId);
         }
 
-        const botMessage = result.data?.message || "No response received.";
+        // Add bot's response to the chat
+        const botMessage = result.data?.message || 'No response received.';
         setMessages((prevMessages) => [
           ...prevMessages,
-          { sender: "bot", text: botMessage },
+          { sender: 'bot', text: botMessage },
         ]);
       } catch (error) {
-        console.error("Error communicating with the API:", error);
+        console.error('Error communicating with the API:', error);
+
+        // Show error message in the chat
         setMessages((prevMessages) => [
           ...prevMessages,
-          {
-            sender: "bot",
-            text: "Sorry, I couldn't process that. Please try again.",
-          },
+          { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." },
         ]);
       } finally {
         setIsLoading(false);
       }
     }
-  };
-
-  const endChat = () => {
-    localStorage.removeItem("conversationId");
-    setConversationId(null);
-    setMessages([{ sender: "bot", text: "Hello! Ask me anything." }]);
   };
 
   return (
@@ -103,7 +101,7 @@ const Chatbot = () => {
               </div>
               <span className="title">Chatbot</span>
             </div>
-            <button onClick={endChat}>End Chat</button>
+            <button onClick={toggleChat}>×</button>
           </div>
           <div className="chat-messages">
             {messages.map((message, index) => (
@@ -120,7 +118,7 @@ const Chatbot = () => {
               onChange={(e) => setUserInput(e.target.value)}
               placeholder="Type your message..."
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !isLoading) {
+                if (e.key === 'Enter' && !isLoading) {
                   sendMessage();
                 }
               }}
