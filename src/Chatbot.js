@@ -15,6 +15,7 @@ const Chatbot = () => {
   const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
   const headers = {
     'Content-Type': 'application/json',
+  'conversationId': conversationId || null,
   };
 
   useEffect(() => {
@@ -65,32 +66,40 @@ const Chatbot = () => {
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
+const sendMessage = async () => {
+  if (!userInput.trim()) return;
 
-  const sendMessage = async () => {
-    if (userInput.trim()) {
-      setMessages([...messages, { sender: 'user', text: userInput }]);
-      const userMessage = userInput;
-      setUserInput('');
-      setIsLoading(true);
+  if (!conversationId) {
+    await initializeConversation(); // Initialize if null
+  }
 
-      const data = JSON.stringify({
-        configAiName: 'OpenAI',
-        promptQuery: userMessage,
-        conversationId,
-      });
+  setMessages([...messages, { sender: 'user', text: userInput }]);
+  const userMessage = userInput;
+  setUserInput('');
+  setIsLoading(true);
 
-      try {
-        const result = await axios.post(apiUrl, data, { headers });
-        const botMessage = result.data?.message || 'No response received.';
-        setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
-      } catch (error) {
-        console.error('Error communicating with the API:', error);
-        setMessages((prev) => [...prev, { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." }]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
+  const data = JSON.stringify({
+    configAiName: 'OpenAI',
+    promptQuery: userMessage,
+    conversationId: conversationId || null, // Pass the latest conversationId
+  });
+
+  try {
+    const result = await axios.post(apiUrl, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'conversationId': conversationId || null,
+      },
+    });
+    const botMessage = result.data?.message || 'No response received.';
+    setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
+  } catch (error) {
+    console.error('Error communicating with the API:', error);
+    setMessages((prev) => [...prev, { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." }]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const endChat = () => {
     localStorage.removeItem('chatHistory');
