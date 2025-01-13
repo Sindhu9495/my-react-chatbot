@@ -35,12 +35,16 @@ const Chatbot = () => {
   const sendMessage = async () => {
     if (userInput.trim()) {
       // Add the user's message to the chat
-      setMessages([...messages, { sender: 'user', text: userInput }]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: 'user', text: userInput },
+      ]);
       const userMessage = userInput;
       setUserInput('');
       setIsLoading(true);
 
-      const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+      const apiUrl =
+        'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
         'Content-Type': 'application/json',
         conversationId: conversationId || undefined, // Include conversationId if it exists
@@ -59,7 +63,7 @@ const Chatbot = () => {
 
         // If conversationId is not set (first message), retrieve and save it
         const newConversationId = result.data?.conversationId;
-        if (newConversationId && !conversationId) {
+        if (!conversationId && newConversationId) {
           setConversationId(newConversationId);
           localStorage.setItem('conversationId', newConversationId);
         }
