@@ -10,15 +10,17 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
 
   const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
   const headers = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 
   useEffect(() => {
     const savedUser = localStorage.getItem('chatbotUser');
     const savedMessages = localStorage.getItem('chatHistory');
+    const savedConversationId = localStorage.getItem('conversationId');
 
     if (savedUser) {
       const user = JSON.parse(savedUser);
@@ -29,6 +31,10 @@ const Chatbot = () => {
 
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
+    }
+
+    if (savedConversationId) {
+      setConversationId(savedConversationId);
     }
   }, []);
 
@@ -42,6 +48,18 @@ const Chatbot = () => {
     e.preventDefault();
     localStorage.setItem('chatbotUser', JSON.stringify({ name: userName, email: userEmail }));
     setIsFirstTime(false);
+    initializeConversation();
+  };
+
+  const initializeConversation = async () => {
+    try {
+      const response = await axios.post(`${apiUrl}/startConversation`, { userName, userEmail }, { headers });
+      const newConversationId = response.data.conversationId;
+      setConversationId(newConversationId);
+      localStorage.setItem('conversationId', newConversationId);
+    } catch (error) {
+      console.error('Failed to initialize conversation:', error);
+    }
   };
 
   const toggleChat = () => {
@@ -58,6 +76,7 @@ const Chatbot = () => {
       const data = JSON.stringify({
         configAiName: 'OpenAI',
         promptQuery: userMessage,
+        conversationId,
       });
 
       try {
@@ -75,7 +94,9 @@ const Chatbot = () => {
 
   const endChat = () => {
     localStorage.removeItem('chatHistory');
+    localStorage.removeItem('conversationId');
     setMessages([]);
+    setConversationId(null);
     setIsOpen(false);
   };
 
