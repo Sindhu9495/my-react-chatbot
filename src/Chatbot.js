@@ -32,58 +32,49 @@ const Chatbot = () => {
     setIsOpen(!isOpen);
   };
 
-  const sendMessage = async () => {
-    if (userInput.trim()) {
-      // Add the user's message to the chat
-      setMessages([...messages, { sender: 'user', text: userInput }]);
-      const userMessage = userInput;
-      setUserInput('');
-      setIsLoading(true);
+ const sendMessage = async () => {
+  if (userInput.trim()) {
+    setMessages([...messages, { sender: 'user', text: userInput }]);
+    const userMessage = userInput;
+    setUserInput('');
+    setIsLoading(true);
 
-      const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
-      const headers = {
-        'Content-Type': 'application/json',
-        conversationId: conversationId || undefined, // Include conversationId if it exists
-      };
+    const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(conversationId && { conversationId }),
+    };
 
-      const data = JSON.stringify({
-        configAiName: 'OpenAI',
-        promptQuery: userMessage,
-      });
+    const data = JSON.stringify({
+      configAiName: 'OpenAI',
+      promptQuery: userMessage,
+    });
 
-      try {
-        // Make the API call
-        const result = await axios.post(apiUrl, data, { headers });
+    try {
+      const result = await axios.post(apiUrl, data, { headers });
+      console.log('Response from API:', result);
 
-        console.log('Response from API:', result);
-
-        // If conversationId is not set (first message), retrieve and save it
-        const newConversationId = result.data?.conversationId;
-        if (newConversationId && !conversationId) {
-          setConversationId(newConversationId);
-          localStorage.setItem('conversationId', newConversationId);
-        }
-
-        // Add bot's response to the chat
-        const botMessage = result.data?.message || 'No response received.';
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { sender: 'bot', text: botMessage },
-        ]);
-      } catch (error) {
-        console.error('Error communicating with the API:', error);
-
-        // Show error message in the chat
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." },
-        ]);
-      } finally {
-        setIsLoading(false);
+      const newConversationId = result.data?.conversationId;
+      if (newConversationId && newConversationId !== conversationId) {
+        setConversationId(newConversationId);
+        localStorage.setItem('conversationId', newConversationId);
       }
-    }
-  };
 
+      const botMessage = result.data?.message || 'No response received.';
+      setMessages((prevMessages) => [...prevMessages, { sender: 'bot', text: botMessage }]);
+    } catch (error) {
+      console.error('Error communicating with the API:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+};
+
+   
   return (
     <div className="chatbot-container">
       {/* Chat Icon */}
