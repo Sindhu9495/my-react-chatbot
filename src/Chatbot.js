@@ -13,7 +13,7 @@ const Chatbot = () => {
 
   const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
   const headers = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 
   useEffect(() => {
@@ -74,14 +74,20 @@ const Chatbot = () => {
   };
 
   const endChat = () => {
-    localStorage.removeItem('chatHistory');
-    setMessages([]);
-    setIsOpen(false);
+    localStorage.removeItem('chatbotUser'); // Remove user data
+    localStorage.removeItem('chatHistory'); // Remove chat history
+    setMessages([]); // Clear messages
+    setUserName(''); // Reset username
+    setUserEmail(''); // Reset email
+    setIsFirstTime(true); // Show the form again
+    setIsOpen(false); // Close the chat window
   };
 
   return (
     <div className="chatbot-container">
-      <div className="chat-icon" onClick={toggleChat}>💬</div>
+      <div className="chat-icon" onClick={toggleChat}>
+        💬
+      </div>
 
       {isOpen && (
         <div className="chat-window">
@@ -135,7 +141,9 @@ const Chatbot = () => {
                     }
                   }}
                 />
-                <button onClick={sendMessage} disabled={isLoading}>Send</button>
+                <button onClick={sendMessage} disabled={isLoading}>
+                  Send
+                </button>
               </div>
             </>
           )}
