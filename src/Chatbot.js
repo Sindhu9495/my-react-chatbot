@@ -15,11 +15,18 @@ const Chatbot = () => {
   useEffect(() => {
     const savedConversationId = localStorage.getItem('conversationId');
     const savedMessages = localStorage.getItem('chatHistory');
+
     if (savedConversationId) {
-      setConversationId(savedConversationId);
+      setConversationId(savedConversationId); // Use saved conversation ID
+    } else {
+      // Generate a new unique ID for the conversation
+      const newConversationId = generateConversationId();
+      setConversationId(newConversationId);
+      localStorage.setItem('conversationId', newConversationId); // Save to localStorage
     }
+
     if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
+      setMessages(JSON.parse(savedMessages)); // Load previous messages
     }
   }, []);
 
@@ -28,53 +35,56 @@ const Chatbot = () => {
     localStorage.setItem('chatHistory', JSON.stringify(messages));
   }, [messages]);
 
+  // Function to generate a unique conversation ID
+  const generateConversationId = () => {
+    return `conversation-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  };
+
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
 
- const sendMessage = async () => {
-  if (userInput.trim()) {
-    setMessages([...messages, { sender: 'user', text: userInput }]);
-    const userMessage = userInput;
-    setUserInput('');
-    setIsLoading(true);
+  const sendMessage = async () => {
+    if (userInput.trim()) {
+      // Add the user's message to the chat
+      setMessages([...messages, { sender: 'user', text: userInput }]);
+      const userMessage = userInput;
+      setUserInput('');
+      setIsLoading(true);
 
-    const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(conversationId && { conversationId }),
-    };
+      const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+      const headers = {
+        'Content-Type': 'application/json',
+        conversationId, // Always include the current conversation ID
+      };
 
-    const data = JSON.stringify({
-      configAiName: 'OpenAI',
-      promptQuery: userMessage,
-    });
+      const data = JSON.stringify({
+        configAiName: 'OpenAI',
+        promptQuery: userMessage,
+      });
 
-    try {
-      const result = await axios.post(apiUrl, data, { headers });
-      console.log('Response from API:', result);
+      try {
+        // Make the API call
+        const result = await axios.post(apiUrl, data, { headers });
+        console.log('Response from API:', result);
 
-      const newConversationId = result.data?.conversationId;
-      if (newConversationId && newConversationId !== conversationId) {
-        setConversationId(newConversationId);
-        localStorage.setItem('conversationId', newConversationId);
+        const botMessage = result.data?.message || 'No response received.';
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: 'bot', text: botMessage },
+        ]);
+      } catch (error) {
+        console.error('Error communicating with the API:', error);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." },
+        ]);
+      } finally {
+        setIsLoading(false);
       }
-
-      const botMessage = result.data?.message || 'No response received.';
-      setMessages((prevMessages) => [...prevMessages, { sender: 'bot', text: botMessage }]);
-    } catch (error) {
-      console.error('Error communicating with the API:', error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." },
-      ]);
-    } finally {
-      setIsLoading(false);
     }
-  }
-};
+  };
 
-   
   return (
     <div className="chatbot-container">
       {/* Chat Icon */}
