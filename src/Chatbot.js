@@ -14,15 +14,11 @@ const Chatbot = () => {
   const apiUrl =
     "https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/";
 
-  // Load conversationId and messages from localStorage when the component mounts
+  // Load conversationId from localStorage when the component mounts
   useEffect(() => {
     const savedConversationId = localStorage.getItem("conversationId");
-    const savedMessages = JSON.parse(localStorage.getItem("messages"));
     if (savedConversationId) {
       setConversationId(savedConversationId);
-    }
-    if (savedMessages) {
-      setMessages(savedMessages);
     }
   }, []);
 
@@ -33,10 +29,9 @@ const Chatbot = () => {
   const sendMessage = async () => {
     if (userInput.trim()) {
       // Add the user's message to the chat
-      const newUserMessage = { sender: "user", text: userInput };
       setMessages((prevMessages) => [
         ...prevMessages,
-        newUserMessage,
+        { sender: "user", text: userInput },
       ]);
       const userMessage = userInput;
       setUserInput("");
@@ -49,7 +44,7 @@ const Chatbot = () => {
       const data = JSON.stringify({
         configAiName: "OpenAI",
         promptQuery: userMessage,
-        conversationId, // Send current conversationId
+        conversationId, // Send null for the first message
       });
 
       try {
@@ -66,17 +61,18 @@ const Chatbot = () => {
         }
 
         const botMessage = result.data?.message || "No response received.";
-        const newBotMessage = { sender: "bot", text: botMessage };
         setMessages((prevMessages) => [
           ...prevMessages,
-          newBotMessage,
+          { sender: "bot", text: botMessage },
         ]);
       } catch (error) {
         console.error("Error communicating with the API:", error);
-        const errorMessage = { sender: "bot", text: "Sorry, I couldn't process that. Please try again." };
         setMessages((prevMessages) => [
           ...prevMessages,
-          errorMessage,
+          {
+            sender: "bot",
+            text: "Sorry, I couldn't process that. Please try again.",
+          },
         ]);
       } finally {
         setIsLoading(false);
@@ -85,19 +81,10 @@ const Chatbot = () => {
   };
 
   const endChat = () => {
-    // Remove conversationId and messages from localStorage
     localStorage.removeItem("conversationId");
-    localStorage.removeItem("messages");
     setConversationId(null);
     setMessages([{ sender: "bot", text: "Hello! Ask me anything." }]);
   };
-
-  // Save messages to localStorage whenever they change
-  useEffect(() => {
-    if (conversationId) {
-      localStorage.setItem("messages", JSON.stringify(messages));
-    }
-  }, [messages, conversationId]);
 
   return (
     <div className="chatbot-container">
