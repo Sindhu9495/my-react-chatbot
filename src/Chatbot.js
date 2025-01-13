@@ -1,174 +1,122 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './Chatbot.css';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isFirstTime, setIsFirstTime] = useState(true);
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [userInput, setUserInput] = useState('');
+  const [messages, setMessages] = useState([
+    { sender: "bot", text: "Hello! Ask me anything." }
+  ]);
+  const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState(null);
-
-  const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
-  const headers = {
-    'Content-Type': 'application/json',
-  'conversationId': conversationId || null,
-  };
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('chatbotUser');
-    const savedMessages = localStorage.getItem('chatHistory');
-    const savedConversationId = localStorage.getItem('conversationId');
-
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setUserName(user.name);
-      setUserEmail(user.email);
-      setIsFirstTime(false);
-    }
-
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
-
-    if (savedConversationId) {
-      setConversationId(savedConversationId);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('chatHistory', JSON.stringify(messages));
-    }
-  }, [messages]);
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    localStorage.setItem('chatbotUser', JSON.stringify({ name: userName, email: userEmail }));
-    setIsFirstTime(false);
-    initializeConversation();
-  };
-
-  const initializeConversation = async () => {
-    try {
-      const response = await axios.post(`${apiUrl}/startConversation`, { userName, userEmail }, { headers });
-      const newConversationId = response.data.conversationId;
-      setConversationId(newConversationId);
-      localStorage.setItem('conversationId', newConversationId);
-    } catch (error) {
-      console.error('Failed to initialize conversation:', error);
-    }
-  };
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
-const sendMessage = async () => {
-  if (!userInput.trim()) return;
 
-  if (!conversationId) {
-    await initializeConversation(); // Initialize if null
-  }
+  const sendMessage = async () => {
+    
+    if (userInput.trim()) {
 
-  setMessages([...messages, { sender: 'user', text: userInput }]);
-  const userMessage = userInput;
-  setUserInput('');
-  setIsLoading(true);
+      // Add the user's message to the chat
+      setMessages([...messages, { sender: "user", text: userInput }]);
+      const userMessage = userInput;
+      setUserInput("");
+      setIsLoading(true);
 
-  const data = JSON.stringify({
-    configAiName: 'OpenAI',
-    promptQuery: userMessage,
-    conversationId: conversationId || null, // Pass the latest conversationId
-  });
+      const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+      const headers = {
+       // 'Accept': '*/*',
+        //'Access-Control-Allow-Origin': 'Content-Type, Authorization https://power-customer-6271-dev-ed.scratch.my.salesforce-sites.com',
+        //'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        //'api_token': '552a73ba-62dd-4472-b3c6-240711042720269', // Your API token
+        'Content-Type': 'application/json'
+      };
+      console.log(userMessage);
+      const data = JSON.stringify({
+        configAiName: 'OpenAI', // Or whatever AI service you are using
+        promptQuery: userMessage, // The message from the user
+      });
 
-  try {
-    const result = await axios.post(apiUrl, data, {
-      headers: {
-        'Content-Type': 'application/json',
-        'conversationId': conversationId || null,
-      },
-    });
-    const botMessage = result.data?.message || 'No response received.';
-    setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
-  } catch (error) {
-    console.error('Error communicating with the API:', error);
-    setMessages((prev) => [...prev, { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." }]);
-  } finally {
-    setIsLoading(false);
-  }
-};
+      try {
+        // Make the API call to your custom endpoint
+        console.log("Api url" , apiUrl)
+        const result = await axios.post(apiUrl, data, { headers });
 
-  const endChat = () => {
-    localStorage.removeItem('chatHistory');
-    localStorage.removeItem('conversationId');
-    setMessages([]);
-    setConversationId(null);
-    setIsOpen(false);
+        console.log("=> Response from API:", result);
+        console.log("=> Headers:", result.headers);
+
+        const botMessage = result.data?.message || "No response received.";
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "bot", text: botMessage }
+        ]);
+      } catch (error) {
+
+        if (error.response) {
+          // The server responded with a status code outside the 2xx range
+          console.log('Error response:', error.response);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log('Error request:', error.request);
+        } else {
+          // Something happened in setting up the request that triggered an error
+          console.log('Error message:', error.message);
+        }
+       // console.error("Error communicating with the API:", error);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "bot", text: "Sorry, I couldn't process that. Please try again." }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
     <div className="chatbot-container">
-      <div className="chat-icon" onClick={toggleChat}>💬</div>
+      {/* Chat Icon */}
+      <div className="chat-icon" onClick={toggleChat}>
+        💬
+      </div>
 
+      {/* Chat Window */}
       {isOpen && (
         <div className="chat-window">
-          {isFirstTime ? (
-            <div className="chat-form">
-              <h3>Welcome!</h3>
-              <form onSubmit={handleFormSubmit}>
-                <input
-                  type="text"
-                  placeholder="Enter your name"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  required
-                />
-                <button type="submit">Start Chat</button>
-              </form>
+          <div className="chat-header">
+            <div className="profile">
+              <div className="profile-icon">
+                <img src="/avatar.png" alt="User Profile" />
+              </div>
+              <span className="title">Chatbot</span>
             </div>
-          ) : (
-            <>
-              <div className="chat-header">
-                <div className="profile">
-                  <div className="profile-icon">
-                    <img src="/avatar.png" alt="User" />
-                  </div>
-                  <span className="title">Hello, {userName}</span>
-                </div>
-                <button onClick={endChat} className="end-chat-button">End Chat</button>
+            <button onClick={toggleChat}>×</button>
+          </div>
+          <div className="chat-messages">
+            {messages.map((message, index) => (
+              <div key={index} className={`chat-message ${message.sender}`}>
+                {message.text}
               </div>
-              <div className="chat-messages">
-                {messages.map((msg, index) => (
-                  <div key={index} className={`chat-message ${msg.sender}`}>{msg.text}</div>
-                ))}
-                {isLoading && <div className="chat-message bot">Typing...</div>}
-              </div>
-              <div className="chat-input">
-                <input
-                  type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder="Type your message..."
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !isLoading) {
-                      sendMessage();
-                    }
-                  }}
-                />
-                <button onClick={sendMessage} disabled={isLoading}>Send</button>
-              </div>
-            </>
-          )}
+            ))}
+            {isLoading && <div className="chat-message bot">Typing...</div>}
+          </div>
+          <div className="chat-input">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Type your message..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isLoading) {
+                  sendMessage();
+                }
+              }}
+            />
+            <button onClick={sendMessage} disabled={isLoading}>
+              Send
+            </button>
+          </div>
         </div>
       )}
     </div>
