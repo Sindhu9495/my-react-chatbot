@@ -62,8 +62,8 @@ const Chatbot = () => {
         console.log('Response from API:', result);
 
         // If conversationId is not set (first message), retrieve and save it
-        const newConversationId = result.data?.conversationId;
-        if (!conversationId && newConversationId) {
+        if (!conversationId && result.data?.conversationId) {
+          const newConversationId = result.data.conversationId;
           setConversationId(newConversationId);
           localStorage.setItem('conversationId', newConversationId);
         }
