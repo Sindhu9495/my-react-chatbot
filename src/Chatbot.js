@@ -9,11 +9,21 @@ const Chatbot = () => {
   ]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState(
-    localStorage.getItem('conversationId') || null
-  );
 
-  // On component mount, load chat history and conversationId from localStorage
+  // Retrieve or generate a unique conversation ID
+  const getConversationId = () => {
+    let storedId = localStorage.getItem('conversationId');
+    if (!storedId) {
+      // Generate a unique ID if not present
+      storedId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('conversationId', storedId);
+    }
+    return storedId;
+  };
+
+  const [conversationId] = useState(getConversationId());
+
+  // On component mount, load chat history
   useEffect(() => {
     const savedMessages = localStorage.getItem('chatHistory');
     if (savedMessages) {
@@ -25,13 +35,6 @@ const Chatbot = () => {
   useEffect(() => {
     localStorage.setItem('chatHistory', JSON.stringify(messages));
   }, [messages]);
-
-  // Save conversationId to localStorage whenever it changes
-  useEffect(() => {
-    if (conversationId) {
-      localStorage.setItem('conversationId', conversationId);
-    }
-  }, [conversationId]);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -52,7 +55,7 @@ const Chatbot = () => {
         'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
       const headers = {
         'Content-Type': 'application/json',
-        conversationId: conversationId || '', // Send existing ID or empty string
+        conversationId, // Always use the same ID from localStorage
       };
 
       const data = JSON.stringify({
@@ -64,11 +67,6 @@ const Chatbot = () => {
         const response = await axios.post(apiUrl, data, { headers });
 
         console.log('API Response:', response);
-
-        if (!conversationId && response.data?.conversationId) {
-          // Set the conversation ID if it's the first message
-          setConversationId(response.data.conversationId);
-        }
 
         const botMessage = response.data?.message || 'No response received.';
         setMessages((prevMessages) => [
