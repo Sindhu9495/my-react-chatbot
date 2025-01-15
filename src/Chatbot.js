@@ -76,7 +76,7 @@ const Chatbot = () => {
 
       const headersWithConversationId = {
         ...headers,
-        'X-Conversation-ID': currentConversationId || 'null', // Pass conversationId in header; 'null' for first request
+        'X-Conversation-ID': currentConversationId || 'null',
       };
 
       try {
