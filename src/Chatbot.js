@@ -61,14 +61,6 @@ const Chatbot = () => {
       setUserInput('');
       setIsLoading(true);
 
-      // Generate conversationId on the first message
-      let currentConversationId = conversationId;
-      if (!currentConversationId) {
-        currentConversationId = `conv_${Date.now()}`;
-        setConversationId(currentConversationId);
-        localStorage.setItem('conversationId', currentConversationId);
-      }
-
       const data = JSON.stringify({
         configAiName: 'OpenAI',
         promptQuery: userMessage,
@@ -76,13 +68,19 @@ const Chatbot = () => {
 
       const headersWithConversationId = {
         ...headers,
-        'X-Conversation-ID': currentConversationId || 'null',
+        'X-Conversation-ID': conversationId || null, // Pass null if conversationId doesn't exist
       };
 
       try {
         const result = await axios.post(apiUrl, data, { headers: headersWithConversationId });
         const botMessage = result.data?.message || 'No response received.';
         setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
+
+        // Set the conversation ID from the backend response if provided
+        if (result.data?.conversationId) {
+          setConversationId(result.data.conversationId);
+          localStorage.setItem('conversationId', result.data.conversationId);
+        }
       } catch (error) {
         console.error('Error communicating with the API:', error);
         setMessages((prev) => [...prev, { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." }]);
