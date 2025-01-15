@@ -18,16 +18,9 @@ const Chatbot = () => {
   };
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('chatbotUser');
     const savedMessages = localStorage.getItem('chatHistory');
     const savedConversationId = localStorage.getItem('conversationId');
-
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setUserName(user.name);
-      setUserEmail(user.email);
-      setIsFirstTime(false);
-    }
+    const savedUser = localStorage.getItem('chatbotUser');
 
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
@@ -35,6 +28,13 @@ const Chatbot = () => {
 
     if (savedConversationId) {
       setConversationId(savedConversationId);
+    }
+
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setUserName(user.name);
+      setUserEmail(user.email);
+      setIsFirstTime(false);
     }
   }, []);
 
@@ -46,9 +46,6 @@ const Chatbot = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    const newConversationId = `conv_${Date.now()}`; // Generate unique conversation ID
-    setConversationId(newConversationId);
-    localStorage.setItem('conversationId', newConversationId);
     localStorage.setItem('chatbotUser', JSON.stringify({ name: userName, email: userEmail }));
     setIsFirstTime(false);
   };
@@ -57,45 +54,43 @@ const Chatbot = () => {
     setIsOpen(!isOpen);
   };
 
- const sendMessage = async () => {
-  if (userInput.trim()) {
-    setMessages([...messages, { sender: 'user', text: userInput }]);
-    const userMessage = userInput;
-    setUserInput('');
-    setIsLoading(true);
+  const sendMessage = async () => {
+    if (userInput.trim()) {
+      const userMessage = userInput;
+      setMessages([...messages, { sender: 'user', text: userMessage }]);
+      setUserInput('');
+      setIsLoading(true);
 
-    const data = JSON.stringify({
-      configAiName: 'OpenAI',
-      promptQuery: userMessage,
-      conversationId: conversationId, // Include conversationId
-    });
-
-    try {
-      const result = await axios.post(apiUrl, data, { headers });
-      const botMessage = result.data?.message || 'No response received.';
-      setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
-    } catch (error) {
-      console.error('Axios Error:', error);
-      if (error.response) {
-        // The request was made, and the server responded with a status code outside 2xx
-        console.error('Response Data:', error.response.data);
-        console.error('Status Code:', error.response.status);
-        console.error('Headers:', error.response.headers);
-        setMessages((prev) => [...prev, { sender: 'bot', text: `Error: ${error.response.data?.message || 'Server error occurred.'}` }]);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error('Request:', error.request);
-        setMessages((prev) => [...prev, { sender: 'bot', text: 'No response from the server. Please check your connection or try again later.' }]);
-      } else {
-        // Something else happened while setting up the request
-        console.error('Error Message:', error.message);
-        setMessages((prev) => [...prev, { sender: 'bot', text: `Unexpected error: ${error.message}` }]);
+      // Generate conversationId on the first message
+      let currentConversationId = conversationId;
+      if (!currentConversationId) {
+        currentConversationId = `conv_${Date.now()}`;
+        setConversationId(currentConversationId);
+        localStorage.setItem('conversationId', currentConversationId);
       }
-    } finally {
-      setIsLoading(false);
+
+      const data = JSON.stringify({
+        configAiName: 'OpenAI',
+        promptQuery: userMessage,
+      });
+
+      const headersWithConversationId = {
+        ...headers,
+        'X-Conversation-ID': currentConversationId || 'null', // Pass conversationId in header; 'null' for first request
+      };
+
+      try {
+        const result = await axios.post(apiUrl, data, { headers: headersWithConversationId });
+        const botMessage = result.data?.message || 'No response received.';
+        setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
+      } catch (error) {
+        console.error('Error communicating with the API:', error);
+        setMessages((prev) => [...prev, { sender: 'bot', text: "Sorry, I couldn't process that. Please try again." }]);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
-};
+  };
 
   const endChat = () => {
     localStorage.removeItem('chatbotUser'); // Remove user data
