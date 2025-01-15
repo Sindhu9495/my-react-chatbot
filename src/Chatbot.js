@@ -64,20 +64,16 @@ const Chatbot = () => {
       const data = JSON.stringify({
         configAiName: 'OpenAI',
         promptQuery: userMessage,
+        conversationId: conversationId, // Pass null for the first request; update afterward
       });
 
-      const headersWithConversationId = {
-        ...headers,
-        'X-Conversation-ID': conversationId || null, // Pass null if conversationId doesn't exist
-      };
-
       try {
-        const result = await axios.post(apiUrl, data, { headers: headersWithConversationId });
+        const result = await axios.post(apiUrl, data, { headers });
         const botMessage = result.data?.message || 'No response received.';
         setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
 
         // Set the conversation ID from the backend response if provided
-        if (result.data?.conversationId) {
+        if (result.data?.conversationId && !conversationId) {
           setConversationId(result.data.conversationId);
           localStorage.setItem('conversationId', result.data.conversationId);
         }
