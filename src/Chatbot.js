@@ -10,6 +10,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
 
   const apiUrl = 'https://business-nosoftware-5580-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
   const headers = {
@@ -19,6 +20,7 @@ const Chatbot = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('chatbotUser');
     const savedMessages = localStorage.getItem('chatHistory');
+    const savedConversationId = localStorage.getItem('conversationId');
 
     if (savedUser) {
       const user = JSON.parse(savedUser);
@@ -30,6 +32,10 @@ const Chatbot = () => {
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
     }
+
+    if (savedConversationId) {
+      setConversationId(savedConversationId);
+    }
   }, []);
 
   useEffect(() => {
@@ -40,6 +46,9 @@ const Chatbot = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    const newConversationId = `conv_${Date.now()}`; // Generate unique conversation ID
+    setConversationId(newConversationId);
+    localStorage.setItem('conversationId', newConversationId);
     localStorage.setItem('chatbotUser', JSON.stringify({ name: userName, email: userEmail }));
     setIsFirstTime(false);
   };
@@ -58,6 +67,7 @@ const Chatbot = () => {
       const data = JSON.stringify({
         configAiName: 'OpenAI',
         promptQuery: userMessage,
+        conversationId: conversationId, // Pass conversation ID in API payload
       });
 
       try {
@@ -76,9 +86,11 @@ const Chatbot = () => {
   const endChat = () => {
     localStorage.removeItem('chatbotUser'); // Remove user data
     localStorage.removeItem('chatHistory'); // Remove chat history
+    localStorage.removeItem('conversationId'); // Remove conversation ID
     setMessages([]); // Clear messages
     setUserName(''); // Reset username
     setUserEmail(''); // Reset email
+    setConversationId(null); // Reset conversation ID
     setIsFirstTime(true); // Show the form again
     setIsOpen(false); // Close the chat window
   };
