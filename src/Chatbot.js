@@ -44,6 +44,15 @@ const Chatbot = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (!isFirstTime && isOpen && messages.length === 0 && userName) {
+      setMessages([{
+        sender: 'bot',
+        text: `Hello ${userName}, how can I assist you today?`,
+      }]);
+    }
+  }, [isOpen, isFirstTime, userName]);
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     localStorage.setItem('chatbotUser', JSON.stringify({ name: userName, email: userEmail }));
