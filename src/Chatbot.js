@@ -44,6 +44,15 @@ const Chatbot = () => {
     }
   }, [messages]);
 
+useEffect(() => {
+  if (!isFirstTime && isOpen && messages.length === 0 && userName) {
+    // Add a welcome message only if it hasn't been added yet
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { sender: 'bot', text: `Hello ${userName}, how can I assist you today?` },
+    ]);
+  }
+}, [isOpen, isFirstTime, userName, messages]);
 
   
   const handleFormSubmit = (e) => {
