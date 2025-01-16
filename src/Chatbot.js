@@ -44,15 +44,6 @@ const Chatbot = () => {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (!isFirstTime && isOpen && messages.length === 0 && userName) {
-      setMessages([{
-        sender: 'bot',
-        text: `Hello ${userName}, how can I assist you today?`,
-      }]);
-    }
-  }, [isOpen, isFirstTime, userName]);
-
   const handleFormSubmit = (e) => {
     e.preventDefault();
     localStorage.setItem('chatbotUser', JSON.stringify({ name: userName, email: userEmail }));
@@ -73,7 +64,7 @@ const Chatbot = () => {
       const data = JSON.stringify({
         configAiName: 'OpenAI',
         promptQuery: userMessage,
-        conversationId: conversationId,
+        conversationId: conversationId, // Pass null for the first request; update afterward
       });
 
       try {
@@ -81,6 +72,7 @@ const Chatbot = () => {
         const botMessage = result.data?.message || 'No response received.';
         setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
 
+        // Set the conversation ID from the backend response if provided
         if (result.data?.conversationId && !conversationId) {
           setConversationId(result.data.conversationId);
           localStorage.setItem('conversationId', result.data.conversationId);
@@ -95,15 +87,15 @@ const Chatbot = () => {
   };
 
   const endChat = () => {
-    localStorage.removeItem('chatbotUser');
-    localStorage.removeItem('chatHistory');
-    localStorage.removeItem('conversationId');
-    setMessages([]);
-    setUserName('');
-    setUserEmail('');
-    setConversationId(null);
-    setIsFirstTime(true);
-    setIsOpen(false);
+    localStorage.removeItem('chatbotUser'); // Remove user data
+    localStorage.removeItem('chatHistory'); // Remove chat history
+    localStorage.removeItem('conversationId'); // Remove conversation ID
+    setMessages([]); // Clear messages
+    setUserName(''); // Reset username
+    setUserEmail(''); // Reset email
+    setConversationId(null); // Reset conversation ID
+    setIsFirstTime(true); // Show the form again
+    setIsOpen(false); // Close the chat window
   };
 
   return (
@@ -176,4 +168,4 @@ const Chatbot = () => {
   );
 };
 
-export default Chatbot;
+export default Chatbot; 
