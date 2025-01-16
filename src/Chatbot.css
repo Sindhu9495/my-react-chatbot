@@ -391,18 +391,14 @@ margin-top:40px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
+    font-family:poppins;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .end-chat-button:hover {
-  background-color: #ff1a1a;
-    color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transform: scale(1.1);
+  color:red;
+        font-family:poppins;
+
 }
 
 
