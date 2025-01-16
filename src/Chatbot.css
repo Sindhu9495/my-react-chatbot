@@ -396,8 +396,10 @@ margin-top:40px;
 }
 
 .end-chat-button:hover {
-  color:red;
-        font-family:poppins;
+  
+  font-size: 15px;
+      transition: background 0.3s ease, transform 0.2s ease;
+
 
 }
 
