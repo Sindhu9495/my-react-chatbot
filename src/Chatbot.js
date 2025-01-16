@@ -73,7 +73,7 @@ const Chatbot = () => {
       const data = JSON.stringify({
         configAiName: 'OpenAI',
         promptQuery: userMessage,
-        conversationId: conversationId, // Pass null for the first request; update afterward
+        conversationId: conversationId,
       });
 
       try {
@@ -81,7 +81,6 @@ const Chatbot = () => {
         const botMessage = result.data?.message || 'No response received.';
         setMessages((prev) => [...prev, { sender: 'bot', text: botMessage }]);
 
-        // Set the conversation ID from the backend response if provided
         if (result.data?.conversationId && !conversationId) {
           setConversationId(result.data.conversationId);
           localStorage.setItem('conversationId', result.data.conversationId);
@@ -96,15 +95,15 @@ const Chatbot = () => {
   };
 
   const endChat = () => {
-    localStorage.removeItem('chatbotUser'); // Remove user data
-    localStorage.removeItem('chatHistory'); // Remove chat history
-    localStorage.removeItem('conversationId'); // Remove conversation ID
-    setMessages([]); // Clear messages
-    setUserName(''); // Reset username
-    setUserEmail(''); // Reset email
-    setConversationId(null); // Reset conversation ID
-    setIsFirstTime(true); // Show the form again
-    setIsOpen(false); // Close the chat window
+    localStorage.removeItem('chatbotUser');
+    localStorage.removeItem('chatHistory');
+    localStorage.removeItem('conversationId');
+    setMessages([]);
+    setUserName('');
+    setUserEmail('');
+    setConversationId(null);
+    setIsFirstTime(true);
+    setIsOpen(false);
   };
 
   return (
