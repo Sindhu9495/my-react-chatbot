@@ -74,6 +74,7 @@ useEffect(() => {
 
       const data = JSON.stringify({
         configAiName: 'OpenAI',
+        dataSourceApiName: 'Fetch_Account_Details_(Hard-_Coded)',
         promptQuery: userMessage,
         conversationId: conversationId, // Pass null for the first request; update afterward
       });
