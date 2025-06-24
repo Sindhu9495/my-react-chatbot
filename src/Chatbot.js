@@ -12,7 +12,7 @@ const Chatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
 
-  const apiUrl = 'https://fun-connect-3102-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+  const apiUrl = 'https://force-drive-3959-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -72,20 +72,14 @@ useEffect(() => {
       setUserInput('');
       setIsLoading(true);
 
-      /*const data = JSON.stringify({
-        configAiName: 'OpenAI',
-        dataSourceApiName: 'Fetch_Account_Details_(Hard-_Coded)',
-        promptQuery: userMessage,
-        conversationId: conversationId, // Pass null for the first request; update afterward
-      });*/
-
-            const data = JSON.stringify({
+      const data = JSON.stringify({
         configAiName: 'OpenAI',
         dataSourceApiName: 'Fetch_Account_360',
-        promptQuery: 'How Many invoices are there?',
+        promptQuery: userMessage,
         conversationId: conversationId, // Pass null for the first request; update afterward
       });
 
+     
       try {
         const result = await axios.post(apiUrl, data, { headers });
         const botMessage = result.data?.message || 'No response received.';
