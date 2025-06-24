@@ -82,7 +82,7 @@ useEffect(() => {
             const data = JSON.stringify({
         configAiName: 'OpenAI',
         dataSourceApiName: 'Fetch_Account_360',
-        promptQuery: How Many invoices are there?,
+        promptQuery: 'How Many invoices are there?',
         conversationId: conversationId, // Pass null for the first request; update afterward
       });
 
