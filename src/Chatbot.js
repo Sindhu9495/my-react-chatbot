@@ -12,7 +12,7 @@ const Chatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
 
-  const apiUrl = 'https://force-drive-3959-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
+  const apiUrl = 'https://fun-connect-3102-dev-ed.scratch.my.salesforce-sites.com/services/apexrest/AI_Copilot/api/v1.0/';
   const headers = {
     'Content-Type': 'application/json',
   };
