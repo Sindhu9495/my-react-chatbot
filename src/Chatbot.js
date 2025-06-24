@@ -72,10 +72,17 @@ useEffect(() => {
       setUserInput('');
       setIsLoading(true);
 
-      const data = JSON.stringify({
+      /*const data = JSON.stringify({
         configAiName: 'OpenAI',
         dataSourceApiName: 'Fetch_Account_Details_(Hard-_Coded)',
         promptQuery: userMessage,
+        conversationId: conversationId, // Pass null for the first request; update afterward
+      });*/
+
+            const data = JSON.stringify({
+        configAiName: 'OpenAI',
+        dataSourceApiName: 'Fetch_Account_360',
+        promptQuery: How Many invoices are there?,
         conversationId: conversationId, // Pass null for the first request; update afterward
       });
 
